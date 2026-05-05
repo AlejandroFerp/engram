@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "exported_at": "2026-05-04 10:15:05",
+  "exported_at": "2026-05-05 15:25:38",
   "sessions": [
     {
       "id": "manual-save-global-ai-stack",
@@ -157,6 +157,12 @@
       "project": "servidor_api",
       "directory": "",
       "started_at": "2026-05-04 08:11:08"
+    },
+    {
+      "id": "manual-save-106",
+      "project": "106",
+      "directory": "C:\\Users\\afp5",
+      "started_at": "2026-05-04 16:02:16"
     }
   ],
   "observations": [
@@ -4502,6 +4508,98 @@
       "last_seen_at": "2026-05-04 09:26:46",
       "created_at": "2026-05-04 09:26:46",
       "updated_at": "2026-05-04 09:26:46"
+    },
+    {
+      "id": 282,
+      "sync_id": "obs-df7e42d0f2c4ce2c",
+      "session_id": "manual-save-sw_purpose_trainer",
+      "type": "decision",
+      "title": "Downgraded purposeAgent Python requirement to \u003e=3.7",
+      "content": "**What**: Adapted purposeAgent package to work on Python 3.7.3 (client's machine constraint).\\n**Why**: Client machine only has Python 3.7.3 and the orchestrator agent was refusing to run.\\n**Changes**:\\n- pyproject.toml: requires-python \u003e=3.7, added typing_extensions dep for \u003c3.8\\n- cli.py: replaced walrus operator (:=) with standard if/assignment\\n- models.py: added `from __future__ import annotations` for generic type hints\\n- wiwa.py: conditional import of Literal from typing_extensions fallback\\n**Learned**: `from __future__ import annotations` makes annotations lazy strings (safe for X|Y and list[T] syntax on older Python), but module-level TYPE ALIAS assignments like `X = Literal[...]` ARE evaluated at runtime and need the actual import.",
+      "project": "sw_purpose_trainer",
+      "scope": "project",
+      "revision_count": 1,
+      "duplicate_count": 1,
+      "last_seen_at": "2026-05-04 14:02:53",
+      "created_at": "2026-05-04 14:02:53",
+      "updated_at": "2026-05-04 14:02:53"
+    },
+    {
+      "id": 283,
+      "sync_id": "obs-c771b9187b35056e",
+      "session_id": "manual-save-sw_purpose_trainer",
+      "type": "decision",
+      "title": "Agent prompt: stubs clause + client_instructions support",
+      "content": "**What**: Updated purpose_generator.agent.md to (1) mention stubs by default instead of hiding them, (2) support `client_instructions` field for user overrides, (3) added Example 10 showing stub descriptions on client request.\n**Why**: Oracle analysis showed real purposes ALWAYS mention stubs. Client needed ability to request custom behavior (describe stubs, include auxiliary functions, omit sections).\n**Where**: purposeAgent/agents/purpose_generator.agent.md\n**Learned**: \n- Oracle patterns for stubs: single → `Stub [X] has been used.` / multiple → `For this method, the stubs of [X, Y] and the requirements of [Z] have been used.`\n- client_instructions is priority #3 (above JSON payload, below output contract and style rules)\n- Example 9 output updated to use combined stubs+requirements closing sentence",
+      "project": "sw_purpose_trainer",
+      "scope": "project",
+      "topic_key": "agent/purpose-generator-prompt",
+      "revision_count": 1,
+      "duplicate_count": 1,
+      "last_seen_at": "2026-05-04 16:01:21",
+      "created_at": "2026-05-04 16:01:21",
+      "updated_at": "2026-05-04 16:01:21"
+    },
+    {
+      "id": 284,
+      "sync_id": "obs-ad2d75e915e6161b",
+      "session_id": "manual-save-sw_purpose_trainer",
+      "type": "decision",
+      "title": "Eval 2.2 dataset built: 82 samples (39 single + 43 multi)",
+      "content": "**What**: Built eval 2.2 combining 39 single-sentence samples from recent PRs (samples_v3/) + 43 multi-sentence good samples from original oracle (no \"that LLR\" pattern).\n**Why**: v3 had 0% multi-sentence → couldn't evaluate the sentence-per-LLR template. Need both types.\n**Where**: analysis/build_eval_2_2.py → analysis/eval_2.2/ (examples/ + oracle.json)\n**Learned**:\n- Original oracle: 80 multi-sentence GOOD (no bad pattern), from 12 TCs\n- Selection: max 5 per TC for multi-sentence, 4 per semantic group for single-sentence\n- Multi-sentence distribution: 53×2-clause, 12×3, 3×4, 2×5, 5×7, 1×8, 2×15, 1×21, 1×25",
+      "project": "sw_purpose_trainer",
+      "scope": "project",
+      "topic_key": "eval/dataset-2.2",
+      "revision_count": 1,
+      "duplicate_count": 1,
+      "last_seen_at": "2026-05-04 16:01:21",
+      "created_at": "2026-05-04 16:01:21",
+      "updated_at": "2026-05-04 16:01:21"
+    },
+    {
+      "id": 285,
+      "sync_id": "obs-16b1efca7eb5de1f",
+      "session_id": "manual-save-sw_purpose_trainer",
+      "type": "session_summary",
+      "title": "Session summary: sw_purpose_trainer",
+      "content": "## Goal\nRebuild eval dataset from clean sources and update the purpose generator agent prompt to support stubs mentions and client override instructions.\n\n## Instructions\n- User wants stubs mentioned by DEFAULT in Purpose output (matches real oracle patterns)\n- User wants a `client_instructions` mechanism so the user/client can override agent behavior (omit stubs, describe auxiliaries, etc.)\n- Both JSON field AND chat text are valid sources of client instructions\n- Eval dataset must include multi-sentence samples to test the sentence-per-LLR template\n\n## Discoveries\n- Oracle real patterns for stubs: `Stub [X] has been used.` (single) / `For this method, the stubs of [X, Y] and the requirements of [Z] have been used.` (combined)\n- Original oracle has 80 multi-sentence entries that are CLEAN (no \"that LLR\" antipattern) — from 12 TCs\n- samples_v3/ from recent PRs produced 235 samples but ALL single-sentence — not suitable alone for evaluating multi-LLR template\n- build_eval_2_2.py selects 4 per semantic group from v3 + max 5 per TC from original multi-sentence\n\n## Accomplished\n- ✅ Collected 235 fresh samples from 20 recent PRs → samples_v3/\n- ✅ Built eval 2.2 dataset: 82 examples (39 single + 43 multi-sentence) in analysis/eval_2.2/\n- ✅ Updated agent prompt: stubs now mentioned by default with proper oracle patterns\n- ✅ Added `client_instructions` field support (priority #3 in instruction hierarchy)\n- ✅ Added Example 10 (stubs without requirements + client_instructions override)\n- ✅ Updated Example 9 output to use combined stubs+requirements clause\n- 🔲 Run eval 2.2 with the updated prompt to measure impact\n\n## Next Steps\n- Run: `.\\.venv\\Scripts\\python.exe analysis/run_clean_eval.py --agent purposeAgent/agents/purpose_generator.agent.md --dataset-dir analysis/eval_2.2 --fresh --judge-workers 1 --retry-delay 5 --call-delay 3`\n- Analyze results: compare stubs coverage, multi-sentence completeness, and overall accuracy\n- May need to adjust stubs clause formatting based on eval results\n\n## Relevant Files\n- purposeAgent/agents/purpose_generator.agent.md — main agent prompt (stubs + client_instructions changes)\n- analysis/build_eval_2_2.py — builds eval 2.2 from v3 + original multi-sentence good\n- analysis/eval_2.2/ — 82 examples + oracle.json ready for eval run\n- analysis/collect_recent_samples.py — downloads TCs from recent merged PRs\n- samples_v3/ — 235 clean samples from 13 v2 TCs (20 recent PRs)\n- analysis/_check_multi_good.py — utility to identify clean multi-sentence entries",
+      "project": "sw_purpose_trainer",
+      "scope": "project",
+      "revision_count": 1,
+      "duplicate_count": 1,
+      "last_seen_at": "2026-05-04 16:01:37",
+      "created_at": "2026-05-04 16:01:37",
+      "updated_at": "2026-05-04 16:01:37"
+    },
+    {
+      "id": 286,
+      "sync_id": "obs-a32adb69497f69b1",
+      "session_id": "manual-save-106",
+      "type": "session_summary",
+      "title": "Session summary: 106",
+      "content": "## Goal\nResolver problemas con el módulo de Documentos en EcoAdmin — el modal de creación da errores y el flujo no es útil para generación real.\n\n## Instructions\n- El usuario quiere ver ejemplos reales de errores antes de hacer cambios al módulo de documentos.\n- Mañana continuamos con el diagnóstico y fix del modal/flujo de documentos.\n\n## Discoveries\n- El flujo actual de documentos usa un modal complejo con: selección de tipo, metadatos condicionales (DI, NP, Contrato), estado auto-asignado en creación, y un workflow post-creación (`/drafts` → response con `siguienteAccion` → genera PDF o pide upload).\n- El endpoint `/api/documentos/drafts` POST crea el borrador y devuelve un workflow DTO con `id` y `siguienteAccion` (GENERAR_PDF o SUBIR_PDF).\n- Los tipos generables (DI, NP) intentan auto-generar PDF via `/api/documentos/{id}/generar` POST.\n- Los contratos y otros tipos esperan upload manual de PDF.\n- El problema reportado: \"son los mismos casi y el modal no es muy útil para su generación, da error\". Falta ver los errores concretos.\n\n## Accomplished\n- 🔲 Diagnosticar errores concretos del modal de documentos (pendiente ejemplos del usuario)\n- 🔲 Simplificar/arreglar el flujo de creación de documentos\n\n## Relevant Files\n- ServidorApiRest/src/main/resources/templates/documents.html — template completo con modal, tabla, JS de CRUD y workflow",
+      "project": "106",
+      "scope": "project",
+      "revision_count": 1,
+      "duplicate_count": 1,
+      "last_seen_at": "2026-05-04 16:02:16",
+      "created_at": "2026-05-04 16:02:16",
+      "updated_at": "2026-05-04 16:02:16"
+    },
+    {
+      "id": 287,
+      "sync_id": "obs-57259818a0db5bc5",
+      "session_id": "manual-save-106",
+      "type": "session_summary",
+      "title": "Session summary: 106",
+      "content": "## Goal\nReplicar la funcionalidad completa de la web de shipments (http://localhost:8080/shipments) en la app móvil Android EcoAdmin.\n\n## Instructions\n- El usuario quiere paridad total con la web: CRUD, Kanban, QR, PDFs, Historial, Mapa, Status transitions con comentarios\n- No hacer build después de cambios (regla del usuario), aunque hoy sí compilamos para verificar\n- Formato Embention para commits/branches\n- Responder en el idioma del usuario (español)\n\n## Discoveries\n- El gradle-wrapper.jar estaba ausente del repo; se descargó desde GitHub raw (`gradle/gradle/v8.12.0/gradle/wrapper/gradle-wrapper.jar`) — ~43KB\n- `Icons.Rounded.ArrowBack` está deprecated en Material3 actual → usar `Icons.AutoMirrored.Rounded.ArrowBack`\n- `Modifier.menuAnchor()` sin params está deprecated → usar overload con `MenuAnchorType` y `enabled`\n- El exit code 1 del build es por stderr warnings (gradle native-access), el BUILD fue SUCCESSFUL\n- La web usa Thymeleaf template en `servidor_api/ServidorApiRest/src/main/resources/templates/shipments.html` (~650 líneas)\n- Estado machine: PENDIENTE → EN_TRANSITO → ENTREGADO → COMPLETADO (transición con comentario obligatorio opcional)\n\n## Accomplished\n- ✅ Deleted monolithic TransfersFeature.kt and split into multi-file architecture\n- ✅ Created TransfersViewModels.kt — 3 ViewModels (list, detail, form) with full state management\n- ✅ Created TransferFormScreen.kt — CRUD form with dropdown selectors (productor, gestor, residuo, transportista, ruta, observaciones)\n- ✅ Created TransfersKanbanView.kt — 4-column Kanban via HorizontalPager with colored tabs and count badges\n- ✅ Created QrScannerScreen.kt — CameraX + ML Kit barcode scanning, navigates to detail on scan\n- ✅ Updated EcoAdminApp.kt navigation — added routes for form (create/edit), QR scanner; wired onEdit/onDelete in detail\n- ✅ Updated AndroidManifest.xml — added CAMERA permission and uses-feature\n- ✅ BUILD SUCCESSFUL — zero compilation errors, only deprecation warnings\n- 🔲 Integrate Kanban as toggle in list screen (icon button to switch list↔kanban)\n- 🔲 PDF viewer (WebView or intent) — tab exists but download/display not wired\n- 🔲 Fix deprecation warnings (ArrowBack, menuAnchor)\n- 🔲 Add CameraX + ML Kit dependencies to build.gradle.kts (currently resolves from transitive — should be explicit)\n\n## Relevant Files\n- app/src/main/java/com/ecoadminmovile/feature/transfers/TransfersViewModels.kt — 3 ViewModels (TransfersViewModel, TransferDetailViewModel, TransferFormViewModel)\n- app/src/main/java/com/ecoadminmovile/feature/transfers/TransferFormScreen.kt — Create/edit form with DropdownSelector composable\n- app/src/main/java/com/ecoadminmovile/feature/transfers/TransfersKanbanView.kt — Kanban 4-column pager view\n- app/src/main/java/com/ecoadminmovile/feature/transfers/QrScannerScreen.kt — QR scanner with CameraX + ML Kit\n- app/src/main/java/com/ecoadminmovile/feature/transfers/TransfersListScreen.kt — Main list (created prev session, used this session)\n- app/src/main/java/com/ecoadminmovile/feature/transfers/TransferDetailScreen.kt — Tabbed detail (created prev session, wired this session)\n- app/src/main/java/com/ecoadminmovile/EcoAdminApp.kt — Navigation graph with all new routes\n- app/src/main/AndroidManifest.xml — Camera permission added",
+      "project": "106",
+      "scope": "project",
+      "revision_count": 1,
+      "duplicate_count": 1,
+      "last_seen_at": "2026-05-04 16:17:06",
+      "created_at": "2026-05-04 16:17:06",
+      "updated_at": "2026-05-04 16:17:06"
     }
   ],
   "prompts": [
